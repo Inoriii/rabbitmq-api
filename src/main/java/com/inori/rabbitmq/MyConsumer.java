@@ -45,7 +45,7 @@ public class MyConsumer extends DefaultConsumer {
                 //multiple 是否批量
                 //requeue 是否重回队列
                 System.out.println("------------ 0 equals num ------------");
-                channel.basicNack(envelope.getDeliveryTag(), false, true);
+                //channel.basicNack(envelope.getDeliveryTag(), false, true);
             }
         }
 

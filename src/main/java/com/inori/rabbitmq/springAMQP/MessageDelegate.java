@@ -48,4 +48,14 @@ public class MessageDelegate {
             System.out.println("*************************************");
         }
     }
+
+    public void handleMessageObj(Order order) {
+        System.out.println("-------------Order order-------------");
+        System.out.println(order);
+    }
+
+    public void handleMessageObj(Packaged packaged) {
+        System.out.println("-------------Packaged packaged-------------");
+        System.out.println(packaged);
+    }
 }

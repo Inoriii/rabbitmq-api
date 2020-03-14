@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.ConsumerTagStrategy;
+import org.springframework.amqp.support.converter.ContentTypeDelegatingMessageConverter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,7 +31,7 @@ public class RabbitMQConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory cachingConnectionFactory = new CachingConnectionFactory();
-        cachingConnectionFactory.setAddresses("192.168.1.5:5672");
+        cachingConnectionFactory.setAddresses("192.168.1.2:5672");
         cachingConnectionFactory.setUsername("inori");
         cachingConnectionFactory.setPassword("inori");
         cachingConnectionFactory.setVirtualHost("/");
@@ -141,12 +142,45 @@ public class RabbitMQConfig {
 //        adapter.setMessageConverter(new Jackson2JsonMessageConverter());
 //        container.setMessageListener(adapter);
 
-        Map<String, String> queueOrTagToMethodName = new HashMap<>();
-        queueOrTagToMethodName.put("jsonQueue", "handleMessageJson");
-        queueOrTagToMethodName.put("javaObjQueue", "handleMessageJavaObj");
+//        Map<String, String> queueOrTagToMethodName = new HashMap<>();
+//        queueOrTagToMethodName.put("jsonQueue", "handleMessageJson");
+//        queueOrTagToMethodName.put("javaObjQueue", "handleMessageJavaObj");
+//        MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+//        adapter.setQueueOrTagToMethodName(queueOrTagToMethodName);
+//        adapter.setMessageConverter(new Jackson2JsonMessageConverter());
+//        container.setMessageListener(adapter);
+
+        /**
+         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+         Map<String, String> queueOrTagToMethodName = new HashMap<>();
+         queueOrTagToMethodName.put("javaObjQueue", "handleMessageObj");
+         adapter.setQueueOrTagToMethodName(queueOrTagToMethodName);
+         Jackson2JsonMessageConverter jackson2JsonMessageConverter = new Jackson2JsonMessageConverter();
+
+         //设置对象转换
+         DefaultClassMapper classMapper = new DefaultClassMapper();
+         Map<String, Class<?>> idClassMapping = new HashMap<>();
+         idClassMapping.put("order", Order.class);
+         idClassMapping.put("packaged", Packaged.class);
+         classMapper.setIdClassMapping(idClassMapping);
+         jackson2JsonMessageConverter.setClassMapper(classMapper);
+
+
+         adapter.setMessageConverter(jackson2JsonMessageConverter);
+         container.setMessageListener(adapter);
+         */
+
         MessageListenerAdapter adapter = new MessageListenerAdapter(new MessageDelegate());
+        Map<String, String> queueOrTagToMethodName = new HashMap<>();
+        queueOrTagToMethodName.put("javaObjQueue", "handleMessageObj");
         adapter.setQueueOrTagToMethodName(queueOrTagToMethodName);
-        adapter.setMessageConverter(new Jackson2JsonMessageConverter());
+
+
+        //默认的转换器,当其他都不匹配时用这个
+        //MessageConverter messageConverter = new SimpleMessageConverter();
+        ContentTypeDelegatingMessageConverter contentTypeDelegatingMessageConverter = new ContentTypeDelegatingMessageConverter();
+        contentTypeDelegatingMessageConverter.addDelegate("application/json", new Jackson2JsonMessageConverter());
+        adapter.setMessageConverter(contentTypeDelegatingMessageConverter);
         container.setMessageListener(adapter);
 
         return container;
